@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import com.example.contract.BALLOTContract
 import com.example.state.BALLOTState
 import net.corda.core.contracts.Command
+import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -51,16 +52,16 @@ class IssueBallotFlow(val ballot: BALLOTState) : FlowLogic<SignedTransaction>() 
         val ptx = serviceHub.signInitialTransaction(builder)
 
 
-
-        //val sessions = (ballot.participants - ourIdentity).map { initiateFlow(it) }.toSet()
-
-        val session = initiateFlow(ballot.voter)
+        val sessions = (ballot.participants - ourIdentity).map { initiateFlow(it) }.toSet()
 
 
-        val stx = subFlow(CollectSignaturesFlow(ptx, setOf(session)))
+        // val session = initiateFlow(ballot.voter)
 
 
-        return subFlow(FinalityFlow(stx, setOf(session)))
+        val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
+
+
+        return subFlow(FinalityFlow(stx, sessions))
 
 
 
@@ -70,20 +71,25 @@ class IssueBallotFlow(val ballot: BALLOTState) : FlowLogic<SignedTransaction>() 
 
 
 @InitiatedBy(IssueBallotFlow::class)
-class FillBallotFlow(val flowSession: FlowSession/*, val selections: Map<String, Boolean>*/) : FlowLogic<SignedTransaction>() {
+class FillBallotFlow(val flowSession: FlowSession) : FlowLogic<SignedTransaction>() {
 
 
     @Suspendable
     override fun call(): SignedTransaction {
 
         // why does this expression work?
-        val stf = object: SignTransactionFlow(flowSession)
+        val stf = object : SignTransactionFlow(flowSession) {
+            override fun checkTransaction(stx: SignedTransaction) = requireThat {
 
+                val output = stx.tx.outputs.single().data
+                "This must be a BALLOT transaction" using (output is BALLOTState)
+            }
+
+        }
 
         val txId = subFlow(stf).id
 
         return subFlow(ReceiveFinalityFlow(flowSession, expectedTxId = txId))
-
-
     }
+
 }
