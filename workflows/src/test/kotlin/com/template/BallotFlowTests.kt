@@ -14,6 +14,7 @@ import net.corda.testing.node.TestCordapp
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertEquals
 
 class BallotFlowTests {
     private val network = MockNetwork(MockNetworkParameters(cordappsForAllNodes = listOf(
@@ -39,17 +40,15 @@ class BallotFlowTests {
     fun flowReturnsCorrectlyFormedPartiallySignedTransaction() {
 
         val count = mapOf<String, Int>()
+        val selections = mapOf<String, Boolean>()
         val issuer = a.info.chooseIdentityAndCert().party
         val voter = b.info.chooseIdentityAndCert().party
-        val selections = mapOf<String, Boolean>()
         val ballot = BALLOTState(count, issuer, voter, selections = selections)
         val flow = IssueBallotFlow(ballot)
         val future = a.startFlow(flow)
         network.runNetwork()
-
         val ptx: SignedTransaction = future.getOrThrow()
         println(ptx.tx)
-
         assert(ptx.tx.inputs.isEmpty())
         assert(ptx.tx.outputs.single().data is BALLOTState)
         val command = ptx.tx.commands.single()
@@ -57,7 +56,47 @@ class BallotFlowTests {
         assert(command.signers.toSet() == ballot.participants.map { it.owningKey }.toSet())
         ptx.verifySignaturesExcept(voter.owningKey, network.defaultNotaryNode.info.legalIdentitiesAndCerts.first().owningKey)
 
+    }
 
+    @Test
+    fun flowReturnsTransactionSignedByBothParties() {
+        val count = mapOf<String, Int>()
+        val selections = mapOf<String, Boolean>()
+        val issuer = a.info.chooseIdentityAndCert().party
+        val voter = b.info.chooseIdentityAndCert().party
+        val ballot = BALLOTState(count, issuer, voter, selections)
+        val flow = IssueBallotFlow(ballot)
+        val future = a.startFlow(flow)
+        network.runNetwork()
+        val stx = future.getOrThrow()
+        stx.verifyRequiredSignatures()
 
     }
+
+
+    @Test
+    fun flowRecordsTheSameTransactionInBothPartyVaults() {
+
+        val count = mapOf<String, Int>()
+        val selections = mapOf<String, Boolean>()
+        val issuer = a.info.chooseIdentityAndCert().party
+        val voter = b.info.chooseIdentityAndCert().party
+        val ballot = BALLOTState(count, issuer, voter, selections)
+        val flow = IssueBallotFlow(ballot)
+        val future = a.startFlow(flow)
+        network.runNetwork()
+        val stx = future.getOrThrow()
+        println("Signed transaction hash: ${stx.id}")
+        listOf(a, b).map {
+            it.services.validatedTransactions.getTransaction(stx.id)
+        }.forEach {
+                val txHash = (it as SignedTransaction).id
+                println("$txHash == ${stx.id}")
+                assertEquals(stx.id,txHash)
+          }
+
+    }
+
+
+
 }
