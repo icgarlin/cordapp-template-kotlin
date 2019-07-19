@@ -3,10 +3,7 @@ package com.example.contract
 
 
 import com.example.state.BALLOTState
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.requireSingleCommand
-import net.corda.core.contracts.requireThat
+import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 
 /**
@@ -34,6 +31,45 @@ class BALLOTContract : Contract {
      * considered valid.
      */
     override fun verify(tx: LedgerTransaction) {
+        val command = tx.commands.requireSingleCommand<BALLOTContract.Commands>()
+        when (command.value) {
+
+
+
+
+            is Commands.IssueBallot -> requireThat {
+                "No inputs should be consumed when issuing a BALLOT." using (tx.inputs.isEmpty())
+                "Only one output state should be created when issuing an BALLOT." using (tx.outputs.size == 1)
+                val ballot = tx.outputStates.single() as BALLOTState
+                "The list of selections is not empty" using (ballot.selections.isNotEmpty())
+
+            }
+
+            is Commands.FillOut -> requireThat {
+
+                val ballot = tx.outputStates.single() as BALLOTState
+                var count = 0
+
+                // for each selection the voter chooses the
+                // count will increase by 1 to
+                // get the total amount of selections in a single ballot
+                for ((key, value ) in ballot.selections) {
+                    if (value) {
+                        count++
+                    }
+                }
+
+                "Voting party has not chosen more selections than is allowed by issuer" using (count <= ballot.maxChoices)
+
+
+            }
+
+
+
+
+
+        }
+
 
 
     }
