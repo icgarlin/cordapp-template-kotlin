@@ -1,13 +1,10 @@
 package com.example.state
 
 import com.example.contract.BALLOTContract
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.LinearState
-import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.contracts.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
-
+import java.time.Duration
 
 
 /**
@@ -18,13 +15,16 @@ import net.corda.core.identity.Party
  * @param ballot a map containing the selections for a vote and a boolean representing yes/no
  */
 @BelongsToContract(BALLOTContract::class)
-data class BALLOTState(val count: Map<String,Int>,
+data class BALLOTState(
+                       var count: MutableMap<String,Int>,
                        val issuer: Party,
                        val voter: Party,
-                       val selections: Map<String, Boolean>,
+                       var selections: Map<String,Boolean>,
+                       val maxChoices: Int,
+                       val daysOpen: Duration,
                        override val linearId: UniqueIdentifier = UniqueIdentifier()):
         LinearState {
     /** The public keys of the involved parties. */
-    override val participants: List<AbstractParty> get() = listOf(issuer, voter)
+    override val participants: List<Party> get() = listOf(issuer, voter)
 
 }
