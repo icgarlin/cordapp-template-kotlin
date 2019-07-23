@@ -12,6 +12,7 @@ import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.days
+import java.time.Duration
 import java.time.Instant
 
 
@@ -55,7 +56,11 @@ class IssueBallotFlow(val ballot: BALLOTState) : FlowLogic<SignedTransaction>() 
         builder.addCommand(issueCommand)
 
 
-        val timeWindow: TimeWindow = TimeWindow.withTolerance(serviceHub.clock.instant(), ballot.daysOpen)
+        val daysOpen : Long = ballot.daysOpen.toLong()
+        val duration = Duration.ofDays(daysOpen)
+
+
+        val timeWindow: TimeWindow = TimeWindow.withTolerance(serviceHub.clock.instant(), duration)
 
         builder.setTimeWindow(timeWindow)
 

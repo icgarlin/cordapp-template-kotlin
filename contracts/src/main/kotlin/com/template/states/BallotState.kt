@@ -21,7 +21,7 @@ data class BALLOTState(
                        val voter: Party,
                        var selections: Map<String,Boolean>,
                        val maxChoices: Int,
-                       val daysOpen: Duration,
+                       val daysOpen: Int,
                        override val linearId: UniqueIdentifier = UniqueIdentifier()):
         LinearState {
     /** The public keys of the involved parties. */
