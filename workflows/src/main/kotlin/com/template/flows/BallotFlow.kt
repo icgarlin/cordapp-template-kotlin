@@ -12,6 +12,7 @@ import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.days
+import java.lang.IllegalArgumentException
 import java.time.Duration
 import java.time.Instant
 
@@ -38,6 +39,15 @@ class IssueBallotFlow(val ballot: BALLOTState) : FlowLogic<SignedTransaction>() 
      */
     @Suspendable
     override fun call(): SignedTransaction {
+
+
+
+        // verifies that the node initiating the flow
+        // is the issuing party
+        if (ourIdentity != ballot.issuer) {
+            throw IllegalArgumentException("IssueBallotFlow must be initiated by the issuer node")
+        }
+
 
 
 
@@ -104,7 +114,7 @@ class IssueBallotResponderFlow(val flowSession: FlowSession) : FlowLogic<SignedT
                 val output = stx.tx.outputs.single().data
                 "This must be a BALLOT transaction" using (output is BALLOTState)
 
-                val ballot = (output as BALLOTState)
+
 
             }
         }
@@ -128,6 +138,14 @@ class FillBallotFlow(val ballot: BALLOTState, val selected: Map<String,Boolean>)
 
     override fun call(): SignedTransaction {
 
+        // verifies that the node initiating the flow
+        // is the voting party
+        if (ourIdentity != ballot.voter) {
+
+            throw IllegalArgumentException("FillBallotFlow must be initiated by voter node")
+
+
+        }
 
         // iterates through selected map
         // and increases the values in count map by 1
