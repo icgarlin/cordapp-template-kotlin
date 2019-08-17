@@ -16,15 +16,27 @@ import java.time.Duration
  */
 @BelongsToContract(BALLOTContract::class)
 data class BALLOTState(
-                       var count: MutableMap<String,Int>,
+                       /*var count: MutableMap<String,Int>,*/
                        val issuer: Party,
-                       val voter: Party,
+                       val voters: MutableList<Party>,
                        var selections: Map<String,Boolean>,
-                       val maxChoices: Int,
-                       val daysOpen: Int,
+                       /*val maxChoices: Int,
+                       val daysOpen: Int,*/
                        override val linearId: UniqueIdentifier = UniqueIdentifier()):
+
+
         LinearState {
     /** The public keys of the involved parties. */
-    override val participants: List<Party> get() = listOf(issuer, voter)
+
+    // creates a copy of voters list
+    val votersCopy = voters.filter{true}
+    val newVotersCopy = votersCopy.toMutableList()
+
+
+    // creates a participant list
+    val createdParticipantsList: Boolean = newVotersCopy.add(issuer)
+    override val participants: List<Party> get() = newVotersCopy
+
+
 
 }

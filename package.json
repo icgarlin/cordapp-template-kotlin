@@ -1,0 +1,30 @@
+{
+  "name": "cordapp-voda-kotlin",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">   <img src=\"https://www.corda.net/wp-content/uploads/2016/11/fg005_corda_b.png\" alt=\"Corda\" width=\"500\"> </p>",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/icgarlin/cordapp-template-kotlin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/icgarlin/cordapp-template-kotlin/issues"
+  },
+  "homepage": "https://github.com/icgarlin/cordapp-template-kotlin#readme",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react-app": "^3.1.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1"
+  }
+}

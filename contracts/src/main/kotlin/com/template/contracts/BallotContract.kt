@@ -5,6 +5,10 @@ package com.example.contract
 import com.example.state.BALLOTState
 import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import net.corda.core.flows.*
+import net.corda.core.node.NodeInfo
 
 /**
  * A implementation of a basic smart contract in Corda.
@@ -43,6 +47,9 @@ class BALLOTContract : Contract {
                 val ballot = tx.outputStates.single() as BALLOTState
                 "The list of selections is not empty" using (ballot.selections.isNotEmpty())
 
+
+
+
             }
 
             is Commands.FillOut -> requireThat {
@@ -53,13 +60,17 @@ class BALLOTContract : Contract {
                 // for each selection the voter chooses the
                 // count will increase by 1 to
                 // get the total amount of selections in a single ballot
-                for ((key, value ) in ballot.selections) {
-                    if (value) {
-                        count++
-                    }
-                }
+//                for ((key, value ) in ballot.selections) {
+//                    if (value) {
+//                        count++
+//                    }
+//                }
+//
+//                "Voting party has not chosen more selections than is allowed by issuer." using (count <= ballot.maxChoices)
 
-                "Voting party has not chosen more selections than is allowed by issuer" using (count <= ballot.maxChoices)
+
+
+
 
 
             }
